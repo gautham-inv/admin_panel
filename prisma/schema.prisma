@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id            String   @id @default(uuid())
+  jobId         String?  @map("job_id")
+  name          String
+  email         String
+  whatsapp      String
+  specialization String
+  cgpa          Float
+  college       String
+  yearOfGrad    String   @map("year_of_grad")
+  backlogs      String
+  resumeUrl     String   @map("resume_url")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+  isRead        Boolean  @default(false) @map("is_read")
+
+  @@map("applications")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  isRead    Boolean  @default(false) @map("is_read")
+
+  @@map("contact_messages")
+}
+
