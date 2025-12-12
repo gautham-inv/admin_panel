@@ -13,6 +13,7 @@ datasource db {
 model Application {
   id            String   @id @default(uuid())
   jobId         String?  @map("job_id")
+  jobTitle      String?  @map("job_title")
   name          String
   email         String
   whatsapp      String
@@ -38,4 +39,3 @@ model ContactMessage {
 
   @@map("contact_messages")
 }
-
