@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AdminHeader from "@/app/components/AdminHeader";
 
 export default async function MessageDetailPage({
   params,
@@ -32,8 +33,10 @@ export default async function MessageDetailPage({
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <AdminHeader />
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto p-8">
         <Link
           href="/messages"
           className="text-blue-600 hover:text-blue-800 font-medium mb-4 inline-block"
@@ -72,8 +75,8 @@ export default async function MessageDetailPage({
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-

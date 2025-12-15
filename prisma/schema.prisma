@@ -39,3 +39,17 @@ model ContactMessage {
 
   @@map("contact_messages")
 }
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  eventName String   @map("event_name")
+  eventCategory String? @map("event_category")
+  eventValue String? @map("event_value")
+  pageUrl   String?  @map("page_url")
+  userAgent String? @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("analytics_events")
+  @@index([eventName])
+  @@index([createdAt])
+}
