@@ -8,6 +8,7 @@ type MessageRow = {
   id: string;
   name: string;
   email: string;
+  subject: string | null;
   createdAt: string | Date;
   isRead: boolean;
 };
@@ -33,17 +34,17 @@ export default function MessagesTableClient({
   );
 
   const allSelectableIds = useMemo(() => rows.map((r) => r.id), [rows]);
+
   const allSelected =
     allSelectableIds.length > 0 &&
     allSelectableIds.every((id) => selected[id]);
+
   const someSelected =
     allSelectableIds.some((id) => selected[id]) && !allSelected;
 
   const toggleAll = (next: boolean) => {
     const map: Record<string, boolean> = {};
-    allSelectableIds.forEach((id) => {
-      map[id] = next;
-    });
+    allSelectableIds.forEach((id) => (map[id] = next));
     setSelected(map);
   };
 
@@ -53,6 +54,7 @@ export default function MessagesTableClient({
 
   const onDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
+
     const ok = window.confirm(
       `Delete ${selectedIds.length} message(s)? This cannot be undone.`
     );
@@ -65,8 +67,7 @@ export default function MessagesTableClient({
     });
 
     if (!res.ok) {
-      const msg = await res.text().catch(() => "Failed to delete");
-      alert(msg);
+      alert("Failed to delete messages");
       return;
     }
 
@@ -76,41 +77,46 @@ export default function MessagesTableClient({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white rounded-lg shadow-md">
+      {/* 🔹 Single Header with Inline Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-b border-gray-200">
-        <div className="text-sm text-gray-600">
-          {selectedIds.length > 0 ? (
-            <span>
-              <span className="font-semibold text-gray-900">
-                {selectedIds.length}
-              </span>{" "}
-              selected
+        {/* Left side: Title and selection count */}
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+            Contact Messages
+          </h2>
+
+          {selectedIds.length > 0 && (
+            <span className="text-sm text-gray-500">
+              ({selectedIds.length} selected)
             </span>
-          ) : (
-            <span>Select messages to delete</span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => toggleAll(false)}
-            className="px-3 py-2 text-sm rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
-            disabled={selectedIds.length === 0}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            onClick={onDeleteSelected}
-            className="px-3 py-2 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-            disabled={selectedIds.length === 0 || isPending}
-          >
-            {isPending ? "Deleting..." : "Delete selected"}
-          </button>
-        </div>
+        {/* Right side: Action buttons */}
+        {selectedIds.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => toggleAll(false)}
+              className="px-3 py-1.5 text-sm rounded-md border border-gray-300 hover:bg-gray-50 transition"
+            >
+              Clear
+            </button>
+
+            <button
+              type="button"
+              onClick={onDeleteSelected}
+              disabled={isPending}
+              className="px-3 py-1.5 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+            >
+              {isPending ? "Deleting…" : "Delete"}
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* 🔹 Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -124,7 +130,6 @@ export default function MessagesTableClient({
                   }}
                   onChange={(e) => toggleAll(e.target.checked)}
                   className="h-4 w-4 rounded border-gray-300 text-[#005C89] focus:ring-[#005C89]"
-                  aria-label="Select all messages"
                 />
               </th>
               <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -135,6 +140,9 @@ export default function MessagesTableClient({
               </th>
               <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
+              </th>
+              <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Subject
               </th>
               <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
@@ -148,54 +156,55 @@ export default function MessagesTableClient({
           <tbody className="bg-white divide-y divide-gray-200">
             {rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="px-6 py-10 text-center text-gray-500"
-                >
+                <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
                   No messages yet
                 </td>
               </tr>
             ) : (
-              rows.map((message) => (
+              rows.map((msg) => (
                 <tr
-                  key={message.id}
-                  className={`hover:bg-gray-50 transition-colors ${
-                    message.isRead ? "" : "bg-blue-50"
+                  key={msg.id}
+                  className={`hover:bg-gray-50 transition ${
+                    msg.isRead ? "" : "bg-blue-50"
                   }`}
                 >
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 sm:px-6 py-4">
                     <input
                       type="checkbox"
-                      checked={!!selected[message.id]}
-                      onChange={(e) => toggleOne(message.id, e.target.checked)}
+                      checked={!!selected[msg.id]}
+                      onChange={(e) =>
+                        toggleOne(msg.id, e.target.checked)
+                      }
                       className="h-4 w-4 rounded border-gray-300 text-[#005C89] focus:ring-[#005C89]"
-                      aria-label={`Select message from ${message.name}`}
                     />
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        !message.isRead
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        msg.isRead
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {!message.isRead ? "New" : "Viewed"}
+                      {msg.isRead ? "Viewed" : "New"}
                     </span>
                   </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                    {message.name}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {msg.name}
                   </td>
-                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {message.email}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {msg.email}
+                  </td>
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {msg.subject || "-"}
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(message.createdAt).toLocaleDateString()}
+                    {new Date(msg.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <Link
-                      href={`/messages/${message.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      href={`/messages/${msg.id}`}
+                      className="text-[#005C89] hover:text-[#004066] font-medium text-sm transition"
                     >
                       View
                     </Link>
@@ -209,5 +218,3 @@ export default function MessagesTableClient({
     </div>
   );
 }
-
-
