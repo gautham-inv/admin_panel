@@ -8,7 +8,7 @@ type MessageRow = {
   id: string;
   name: string;
   email: string;
-  subject: string | null;
+  message: string | null;
   createdAt: string | Date;
   isRead: boolean;
 };
@@ -196,7 +196,7 @@ export default function MessagesTableClient({
                     {msg.email}
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {msg.subject || "-"}
+                    {msg.message || "-"}
                   </td>
                   <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(msg.createdAt).toLocaleDateString()}
